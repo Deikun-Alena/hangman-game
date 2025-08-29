@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Main {
     static Scanner scanner = new Scanner(System.in);
+    static Game game;
 
     public static void main(String[] args) {
         boolean running = true;
@@ -30,7 +31,9 @@ public class Main {
 
             switch (choice) {
                 case 1:
+                    game = new Game(selectWord());
                     startGame();
+                    game.printGameResult();
                     break;
                 case 2:
                     System.out.println("\nВыход из игры. Досвидания!");
@@ -44,18 +47,11 @@ public class Main {
     }
 
     public static void startGame() {
-        Game game = new Game(selectWord());
         while (game.getMistakesCount() < game.getMaxAttempts() && !game.isWordGuessed()) {
             game.printCurrentState();
-            game.hangman();
+            game.printHangman();
             var letter = inputLetter();
-            game.addLetter(letter);
-        }
-
-        if (game.isWordGuessed()) {
-            System.out.println("\n\nПоздравляю! Вы отгадали слово: " + game.getSelectedWord());
-        } else {
-            System.out.println("\n\nИгра окончена. Загаданное слово было: " + game.getSelectedWord());
+            game.processGuess(letter);
         }
     }
 
@@ -74,29 +70,35 @@ public class Main {
 
     //letter
     public static char inputLetter() {
-        System.out.print("Введите букву: ");
-        String input = scanner.nextLine();
-        validate(input);
-        return input.charAt(0);
+        while (true) {
+            System.out.print("Введите букву: ");
+            String input = scanner.nextLine().trim();
+
+            if(isValidLetter(input)) {
+                return input.charAt(0);
+            } else {
+                System.out.println("Попробуйте снова!");
+            }
+        }
     }
 
-    private static void validate(String input) {
+    private static boolean isValidLetter(String input) {
         if (input == null || input.isEmpty()) {
             System.out.println("\n\nОШИБКА: Ввод не может быть пустым!");
-            return;
+            return false;
         }
 
-        if (input.length() == 1) {
-            char letter = input.charAt(0);
-
-            if (letter >= 'а' && letter <= 'я') {
-                System.out.println(" ");
-            } else {
-                System.out.println("\n\nОШИБКА: Нужно ввести строчную русскую букву!");
-            }
-
-        } else {
+        if (input.length() != 1) {
             System.out.println("\n\nОШИБКА: Нужно ввести одну букву!");
+            return false;
+        }
+
+        char letter = input.charAt(0);
+        if (letter >= 'а' && letter <= 'я') {
+            return true;
+        } else {
+            System.out.println("\n\nОШИБКА: Нужно ввести строчную русскую букву!");
+            return false;
         }
     }
 }
