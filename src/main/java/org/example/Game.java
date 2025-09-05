@@ -6,13 +6,14 @@ import java.util.List;
 public class Game {
     private int mistakesCount = 0;
     private final int maxAttempts = 6;
-    private String selectedWord;
+    private final String selectedWord;
     private String currentState;
-    private List <Character> usedLetters = new ArrayList<>();
+    private static final String HIDDEN_LETTER_MASK = "_";
+    private final List <Character> usedLetters = new ArrayList<>();
 
     public Game(String selectedWord) {
         this.selectedWord = selectedWord;
-        this.currentState = "_".repeat(selectedWord.length());
+        this.currentState = HIDDEN_LETTER_MASK.repeat(selectedWord.length());
     }
 
     public void printCurrentState() {
@@ -26,27 +27,30 @@ public class Game {
     private List<Integer> updateState(char letter) {
         usedLetters.add(letter);
 
-        ArrayList<Integer> occurrenceIndices = new ArrayList<>();
+        ArrayList<Integer> matchedLetters = new ArrayList<>();
+
         for (int i = 0; i < selectedWord.length(); i++) {
             if (letter == selectedWord.charAt(i)) {
-                occurrenceIndices.add(i);
+                matchedLetters.add(i);
             }
         }
 
-        if (!occurrenceIndices.isEmpty()) {
+        if (!matchedLetters.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder(currentState);
-            for (int i : occurrenceIndices) {
+
+            for (int i : matchedLetters) {
                 stringBuilder.setCharAt(i, letter);
             }
+
             currentState = stringBuilder.toString();
         } else {
             mistakesCount++;
         }
-        return occurrenceIndices;
+        return matchedLetters;
     }
 
-    private void printGuessResult(List<Integer> occurrenceIndices, char letter) {
-        if (!occurrenceIndices.isEmpty()) {
+    private void printGuessResult(List<Integer> matchedLetters) {
+        if (!matchedLetters.isEmpty()) {
             System.out.println("\nОтлично! Буква есть в слове.");
         } else {
             System.out.println("\nТакой буквы нет.");
@@ -62,89 +66,95 @@ public class Game {
         }
 
         List<Integer> indices = updateState(letter);
-        printGuessResult(indices, letter);
+        printGuessResult(indices);
     }
 
     public void printGameResult() {
         if (isWordGuessed()) {
             System.out.println("\n\nПоздравляю! Вы отгадали слово: " + getSelectedWord());
         } else {
-            printLastHangman();
             System.out.println("\n\nИгра окончена. Загаданное слово было: " + getSelectedWord());
         }
     }
 
+    public final String[] HANGMAN_STAGES = new String[] {
+        """
+        +---+
+        |   |
+        |
+        |
+        |
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |
+        |
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |   |
+        |
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |  /|
+        |
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |  /|\\
+        |
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |  /|\\
+        |  /
+        |
+        =========
+        """,
+
+        """
+        +---+
+        |   |
+        |   O
+        |  /|\\
+        |  / \\
+        |
+        =========
+        """,
+    };
+
     public void printHangman() {
-        if (mistakesCount == 0) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("=========");
+        if (mistakesCount >= 0 && mistakesCount < HANGMAN_STAGES.length) {
+            System.out.println(HANGMAN_STAGES[mistakesCount]);
         }
-
-        if (mistakesCount == 1) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("=========");
-        }
-
-        if (mistakesCount == 2) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|   |");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("=========");
-         }
-
-        if (mistakesCount == 3) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|  /|");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("=========");
-        }
-
-        if (mistakesCount == 4) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|  /|\\");
-            System.out.println("|");
-            System.out.println("|");
-            System.out.println("=========");
-        }
-
-        if (mistakesCount == 5) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|  /|\\");
-            System.out.println("|  /");
-            System.out.println("|");
-            System.out.println("=========");
-        }
-    }
-
-    public void printLastHangman() {
-        if (mistakesCount == 6) {
-            System.out.println("+---+");
-            System.out.println("|   |");
-            System.out.println("|   O");
-            System.out.println("|  /|\\");
-            System.out.println("|  / \\");
-            System.out.println("|");
-            System.out.println("=========");
+        else if (mistakesCount >= HANGMAN_STAGES.length) {
+            System.out.println(HANGMAN_STAGES[HANGMAN_STAGES.length - 1]);
         }
     }
 

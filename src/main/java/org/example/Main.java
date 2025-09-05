@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
@@ -21,7 +22,7 @@ public class Main {
             System.out.println("2. Выйти");
             System.out.print("Введите свой выбор: ");
 
-            int choice = -1;
+            int choice;
             try {
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
@@ -57,15 +58,28 @@ public class Main {
 
     //word
     public static String selectWord() {
+        Path dictionaryPath = Paths.get("src/main/resources/dictionary.txt");
+
         try {
-            List<String> words = Files.readAllLines(Paths.get("src/main/resources/dictionary.txt"));
+            if (!Files.exists(dictionaryPath)) {
+                System.out.println("ОШИБКА: Файл словаря не найден!");
+                return "";
+            }
+
+            List<String> words = Files.readAllLines(dictionaryPath);
+
+            if (words.isEmpty()) {
+                System.out.println("ОШИБКА: Словарь пуст!");
+                return "";
+            }
+
             String selectedWord = words.get(ThreadLocalRandom.current().nextInt(words.size()));
             System.out.print("\n\nСлово загадано! \nДлина слова: " + selectedWord.length() + "\n");
             return selectedWord.trim();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("ОШИБКА: " + e.getMessage());
+            return "";
         }
-        return "";
     }
 
     //letter
@@ -94,7 +108,7 @@ public class Main {
         }
 
         char letter = input.charAt(0);
-        if (letter >= 'а' && letter <= 'я') {
+        if ((letter >= 'а') && (letter <= 'я') || (letter == 'ё')) {
             return true;
         } else {
             System.out.println("\n\nОШИБКА: Нужно ввести строчную русскую букву!");
